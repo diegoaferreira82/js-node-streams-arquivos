@@ -1,5 +1,5 @@
-uploads/*
-node_modules
-*.mp4
-*.csv
-.env
+backend/uploads/*
+backend/node_modules
+backend/*.mp4
+backend/*.csv
+backend/.env
