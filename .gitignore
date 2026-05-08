@@ -1,0 +1,5 @@
+uploads/*
+node_modules
+*.mp4
+*.csv
+.env
