@@ -1,57 +1,57 @@
 import { createReadStream, createWriteStream } from "fs";
 import { readFile } from "fs/promises";
-import { createInterface } from "readline/promises";
+import { createInterface } from "readline";
 import { Transform } from "stream";
 import { pipeline } from "stream/promises";
 
 const filename = "largeFile.csv";
 
 async function brokenApp() {
-    await readFile(filename, "utf8");
+  await readFile(filename, "utf8");
 }
 
-function readLargeFile(){
-    const readStream = createReadStream(filename, {encoding: "utf8"})
+function readLargeFile() {
+  const readStream = createReadStream(filename, { encoding: "utf8" });
 
-    readStream.on("data", (chunk)=>{
-        console.log(chunk);
-    })
-};
-
-function transformaCsvLine(line:string){
-    const parts = line.split(",");
-    if (parts.length===3){
-        parts[0] = parts[0].trim().toUpperCase(); //trim retira os espaços
-        const alterationDate= new Date().toISOString();
-        return[...parts, alterationDate].join(",")+"\n"; // os "..." pega o conteúdo do array e coloca dentro de outro array, nesse caso, o alterationDate é adicionado ao final do array
-
-    }
-    return line + "\n";
+  readStream.on("data", (chunk) => {
+    console.log(chunk);
+  });
 }
 
-async function processCsvFile(inputfilepath: string, outputfilepath:string){
- try {
-    const readStream = createReadStream(inputfilepath, {encoding:"utf8"})
-    const writeStream = createWriteStream(outputfilepath, {encoding:"utf8"});
+function transformCsvLine(line: string) {
+  const parts = line.split(",");
+  if (parts.length === 3) {
+    parts[0] = parts[0].trim().toUpperCase();
+    const alterationDate = new Date().toISOString();
+    return [...parts, alterationDate].join(",") + "\n";
+  }
+  return line + "\n";
+}
+
+async function processCsvFile(inputFilePath: string, outputFilePath: string) {
+  try {
+    const readStream = createReadStream(inputFilePath, { encoding: "utf8" });
+    const writeStream = createWriteStream(outputFilePath, { encoding: "utf8" });
     const lineReader = createInterface({
-        input: readStream
-    })
-
-    const transformStream = new Transform({
-        objectMode: true,
-        transform(chunk: string, enconding, callback){
-         callback(null, transformaCsvLine(chunk));
-         //console.log(transformaCsvLine(chunk));   
-        }
+      input: readStream,
     });
 
-    pipeline(lineReader, transformStream, writeStream); } catch (error) {
+    const transformStream = new Transform({
+      objectMode: true,
+      transform(chunk: string, encoding, callback) {
+        callback(null, transformCsvLine(chunk));
+        //console.log(transformCsvLine(chunk));
+      },
+    });
 
- }
+    pipeline(lineReader, transformStream, writeStream);
+  } catch (error) {
+    console.error("Erro ao processar o CSV", error);
+  }
 }
 
-// brokenApp();
+//brokenApp();
 
 //readLargeFile();
 
-processCsvFile(filename, "output.csv")
+processCsvFile(filename, "output.csv");
